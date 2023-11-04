@@ -15,7 +15,13 @@ auth_router = APIRouter(
 session = Session(bind=engine)
 
 @auth_router.get("/")
-async def hello():
+async def hello(Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required()
+        
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    
     return {"message": "Hello World"}
 
 @auth_router.post("/signup", response_model=SignUpModel, status_code=201)
@@ -54,3 +60,14 @@ async def login(user: LoginModel, Authorize: AuthJWT = Depends()):
         response = {"access": access_token, "refresh": refresh_token}
         return jsonable_encoder(response)
     raise HTTPException(status_code=400, detail="Invalid username or password") 
+
+#refreshing tokens
+@auth_router.get("/refresh")
+async def refresh(Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_refresh_token_required()
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Please provide a valid refresh token")
+    current_user = Authorize.get_jwt_subject()
+    access_token = Authorize.create_access_token(subject=current_user)
+    return jsonable_encoder({"access": access_token})
