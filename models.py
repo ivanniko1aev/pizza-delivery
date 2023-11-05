@@ -32,7 +32,7 @@ class Order(Base):
     ]
     #Using the ChoiceType from sqlalchemy_utils, we created a 
     #custom column with choices or attributes
-    __tablename__ = "Order"
+    __tablename__ = "orders"
     id = Column(Integer, primary_key=True)
     quantity = Column(Integer, nullable=False)
     order_status = Column(ChoiceType(choices = ORDER_STATUSES), default='PENDING') 
