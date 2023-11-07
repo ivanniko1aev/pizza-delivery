@@ -79,4 +79,25 @@ async def get_orders(Authorize: AuthJWT = Depends()):
         return jsonable_encoder(orders)
     
     raise HTTPException(status_code=401, detail="You are not authorized")
+
+
+@order_router.get("/orders/{order_id}")
+async def get_order(order_id: int, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required() #Json Web Token Authentication
+        
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    
+    current_user = Authorize.get_jwt_subject() 
+    
+    user = session.query(User).filter(User.username == current_user).first()
+    
+    if user.is_staff:
+        
+        order = session.query(Order).filter(Order.id == order_id).first()
+        
+        return jsonable_encoder(order)
+    
+    raise HTTPException(status_code=401, detail="You are not authorized")
     
