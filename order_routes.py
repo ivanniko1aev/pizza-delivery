@@ -117,4 +117,24 @@ async def get_user_orders(Authorize: AuthJWT = Depends()):
     orders = session.query(Order).filter(Order.user_id == user.id).all()
     
     return jsonable_encoder(orders)
+
+@order_router.get("/user/order/{order_id}")
+async def get_user_order(order_id: int, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required() #Json Web Token Authentication
+        
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    
+    current_user = Authorize.get_jwt_subject() 
+    
+    current_user = session.query(User).filter(User.username == current_user).first()
+    
+    orders= current_user.orders
+    
+    for o in orders:
+        if o.id == order_id:
+            return jsonable_encoder(o)  
+    
+    raise HTTPException(status_code=404, detail="Order not found")
     
