@@ -137,4 +137,22 @@ async def get_user_order(order_id: int, Authorize: AuthJWT = Depends()):
             return jsonable_encoder(o)  
     
     raise HTTPException(status_code=404, detail="Order not found")
+
+
+@order_router.put("/order/update/{order_id}")
+async def update_order_status(order_id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required() #Json Web Token Authentication
+        
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    
+    order_to_update = session.query(Order).filter(Order.id == order_id).first()
+    
+    order_to_update.quantity = order.quantity
+    order_to_update.pizza_size = order.pizza_size
+    
+    session.commit()
+    
+    return jsonable_encoder(order_to_update)
     
