@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from fastapi_jwt_auth import AuthJWT
 from models import User, Order
-from schemas import OrderModel
+from schemas import OrderModel, OrderStatusModel
 from database import Session, engine
 from fastapi.encoders import jsonable_encoder
 
@@ -154,5 +154,41 @@ async def update_order_status(order_id: int, order: OrderModel, Authorize: AuthJ
     
     session.commit()
     
-    return jsonable_encoder(order_to_update)
+    response = {
+            "id": order_to_update.id,
+            "pizza_sizze": order_to_update.pizza_size,
+            "quantity": order_to_update.quantity,
+            "order_status": order_to_update.order_status
+        }
+    
+    return jsonable_encoder(response)
+
+
+@order_router.patch("/order/update/{order_id}")
+async def update_order_status(order_id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required() #Json Web Token Authentication
+        
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    
+    username = Authorize.get_jwt_subject()
+    
+    current_user = session.query(User).filter(User.username == username).first()
+    
+    if current_user.is_staff:
+        order_to_update = session.query(Order).filter(Order.id == order_id).first()
+    
+        order_to_update.order_status = order.order_status
+    
+        session.commit()
+        
+        response = {
+            "id": order_to_update.id,
+            "pizza_sizze": order_to_update.pizza_size,
+            "quantity": order_to_update.quantity,
+            "order_status": order_to_update.order_status
+        }
+    
+        return jsonable_encoder(response)
     
