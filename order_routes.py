@@ -21,17 +21,16 @@ class AuthHandler:
         except Exception as e:
             raise HTTPException(status_code=401, detail="Invalid Token")
         
-auth_handler = AuthHandler()
         
 @order_router.get("/")
 async def hello(Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     return {"message": "Hello World"}
 
 
 @order_router.post("/order", status_code=201)
 async def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
-   auth_handler.authenticate(Authorize)
+   AuthHandler.authenticate(Authorize)
    
    current_user = Authorize.get_jwt_subject() 
   
@@ -60,7 +59,7 @@ async def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
     
 @order_router.get("/orders")
 async def get_orders(Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     current_user = Authorize.get_jwt_subject() 
     user = session.query(User).filter(User.username == current_user).first()
@@ -74,7 +73,7 @@ async def get_orders(Authorize: AuthJWT = Depends()):
 
 @order_router.get("/orders/{order_id}")
 async def get_order(order_id: int, Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     current_user = Authorize.get_jwt_subject() 
     user = session.query(User).filter(User.username == current_user).first()
@@ -89,7 +88,7 @@ async def get_order(order_id: int, Authorize: AuthJWT = Depends()):
 
 @order_router.get("/user/orders")
 async def get_user_orders(Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     current_user = Authorize.get_jwt_subject() 
     user = session.query(User).filter(User.username == current_user).first()
@@ -99,7 +98,7 @@ async def get_user_orders(Authorize: AuthJWT = Depends()):
     return jsonable_encoder(orders)
 @order_router.get("/user/order/{order_id}")
 async def get_user_order(order_id: int, Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     current_user = Authorize.get_jwt_subject() 
     current_user = session.query(User).filter(User.username == current_user).first()
@@ -115,7 +114,7 @@ async def get_user_order(order_id: int, Authorize: AuthJWT = Depends()):
 
 @order_router.put("/order/update/{order_id}")
 async def update_order_status(order_id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     order_to_update = session.query(Order).filter(Order.id == order_id).first()
     
@@ -136,7 +135,7 @@ async def update_order_status(order_id: int, order: OrderModel, Authorize: AuthJ
 
 @order_router.patch("/order/update/{order_id}")
 async def pathchange_order_status(order_id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
-    auth_handler.authenticate(Authorize)
+    AuthHandler.authenticate(Authorize)
     
     username = Authorize.get_jwt_subject()
     
